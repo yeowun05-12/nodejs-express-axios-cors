@@ -1,61 +1,34 @@
 // server.js
 
-const http = require('http');
+const express = require('express');
+const cors = require('cors');
 
-// CORS 설정을 위한 헤더
-const headers = {
-  'Access-Control-Allow-Origin': "http://127.0.0.1:9000",
-  'Access-Control-Allow-Methods': 'OPTIONS, POST, GET, PUT, DELETE',
-  'Access-Control-Allow-Headers': 'Content-Type',
-};
+const app = express();
+const port = 3000;
 
 let data = { message: '여러분 화이팅!' };
 
-const server = http.createServer((req, res) => {
-  if (req.method === 'OPTIONS') {
-    res.writeHead(204, headers);
-    res.end();
-    return;
-  }
+app.use(cors());
+app.use(express.text()); // 요청 본문을 텍스트로 파싱
 
-  if (req.method === 'GET') {
-    res.writeHead(200, { 'Content-Type': 'application/json', ...headers });
-    res.end(JSON.stringify(data));
-  }
-
-  if (req.method === 'POST') {
-    let body = '';
-    req.on('data', (chunk) => {
-      body += chunk.toString();
-    });
-
-    req.on('end', () => {
-      data.message = body;
-      res.writeHead(200, headers);
-      res.end(`받은 POST 데이터: ${body}`);
-    });
-  }
-
-  if (req.method === 'PUT') {
-    let body = '';
-    req.on('data', (chunk) => {
-      body += chunk.toString();
-    });
-
-    req.on('end', () => {
-      data.message = body;
-      res.writeHead(200, headers);
-      res.end(`업데이트된 데이터: ${body}`);
-    });
-  }
-
-  if (req.method === 'DELETE') {
-    data = {};
-    res.writeHead(200, headers);
-    res.end('데이터가 삭제되었습니다.');
-  }
+// get 요청 - 메시지 가져오기
+app.get('/', (req, res) => {
+  res.json(data);
 });
 
-server.listen(3000, () => {
-  console.log('서버가 http://localhost:3000/ 에서 실행 중입니다.');
+// PUT 요청 - 메시지 업데이트
+app.put('/', (req, res) => {
+  data.message = req.body;
+  res.send(`업데이트된 데이터: ${req.body}`);
+});
+
+//DELETE 요청 - 메시지 삭제
+app.delete('/', (req, res) => {
+  data = {};
+  res.send('데이터가 삭제되었습니다.');
+});
+
+//서버 실행
+app.listen(port, () => {
+  console.log(`서버가 http://localhost:${port}에서 실행 중 입니다.`);
 });
